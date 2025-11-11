@@ -1,4 +1,16 @@
 services:
+  auth-server:
+    build:
+      context: .
+      dockerfile: ./auth/Dockerfile
+    container_name: auth-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./metadata:/app/metadata
+    networks:
+      - dfs-net
+
   metadata-server:
     build: .
     container_name: metadata-server
@@ -9,6 +21,8 @@ services:
       - ./metadata:/app/metadata
     networks:
       - dfs-net
+    depends_on:
+      - auth-server
 
   storage-node-1:
     build: ./storagenode
