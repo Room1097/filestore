@@ -81,8 +81,7 @@ class DFSClient:
     """Client for distributed file system operations"""
     
     def __init__(self, user_email):
-
-        self.session_token = st.session_state.get("session_token")
+        self.user_email = user_email
     
     def _send_to_metadata(self, command, payload):
         """Helper to send JSON commands to the Metadata Server."""
@@ -145,7 +144,7 @@ class DFSClient:
     
     def list_files(self):
         """Lists all files for the current user"""
-        response = self._send_to_metadata("LIST_FILES", {"session_token": self.session_token})
+        response = self._send_to_metadata("LIST_FILES", {"user_email": self.user_email})
         if response and response.get("status") == "ok":
             return response.get("files", [])
         return []
@@ -171,7 +170,7 @@ class DFSClient:
                 chunk_hash = hashlib.sha256(chunk_data).hexdigest()
                 chunk_hashes.append(chunk_hash)
                 
-                response = self._send_to_metadata("GET_WRITE_NODES", {"session_token": self.session_token})
+                response = self._send_to_metadata("GET_WRITE_NODES", {})
                 if not response or response.get("status") != "ok":
                     st.error(f"Could not get write locations for chunk {chunk_index}.")
                     progress_bar.empty()
@@ -183,8 +182,7 @@ class DFSClient:
                 chunk_locations[chunk_hash] = nodes
 
                 status_text.text(f"Uploading chunk {chunk_index + 1}/{total_chunks} ({len(chunk_data)} bytes)...")
-          # Add the session token as the 3rd line
-                header = f"STORE\n{chunk_hash}\n{self.session_token}\n{len(chunk_data)}\n\n".encode('utf-8')
+                header = f"STORE\n{chunk_hash}\n{len(chunk_data)}\n\n".encode('utf-8')
                 
                 success = False
                 for address in node_addresses:
@@ -206,10 +204,10 @@ class DFSClient:
             
             status_text.text("Committing file metadata...")
             payload = {
+                "user_email": self.user_email,
                 "filename": filename,
                 "chunks": chunk_hashes,
-                "chunk_locations": chunk_locations,
-                "session_token": self.session_token
+                "chunk_locations": chunk_locations
             }
             response = self._send_to_metadata("PUT_FILE_INFO", payload)
             
@@ -232,8 +230,8 @@ class DFSClient:
         """Downloads a file from the distributed storage."""
         try:
             response = self._send_to_metadata("GET_FILE_INFO", {
-                "filename": filename,
-                "session_token": st.session_state.session_token
+                "user_email": self.user_email,
+                "filename": filename
             })
             if not response or response.get("status") != "ok":
                 st.error(f"Could not get file info for '{filename}'. {response.get('message', '')}")
@@ -262,8 +260,7 @@ class DFSClient:
                         host, port = address.split(':')
                         host = '127.0.0.1'
                         
-                        session_token = st.session_state["session_token"]
-                        header = f"RETRIEVE\n{chunk_hash}\n{session_token}\n\n".encode('utf-8')
+                        header = f"RETRIEVE\n{chunk_hash}\n\n".encode('utf-8')
                         
                         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         s.settimeout(10)
