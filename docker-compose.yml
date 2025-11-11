@@ -1,0 +1,62 @@
+
+
+services:
+  metadata-server:
+    build: .
+    container_name: metadata-server
+    command: metadata_server.py
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./metadata.json:/app/metadata.json
+    networks:
+      - dfs-net
+
+  storage-node-1:
+    build: ./storagenode
+    container_name: storage-node-1
+    command: storage_node.py storage-node-1 5001
+    ports:
+      - "5001:5001"
+    environment:
+      - METADATA_HOST=metadata-server
+    volumes:
+      - ./storage/node1:/app/storage/storage-node-1
+    networks:
+      - dfs-net
+    depends_on:
+      - metadata-server
+
+  storage-node-2:
+    build: ./storagenode
+    container_name: storage-node-2
+    command: storage_node.py storage-node-2 5002
+    ports:
+      - "5002:5002"
+    environment:
+      - METADATA_HOST=metadata-server
+    volumes:
+      - ./storage/node2:/app/storage/storage-node-2
+    networks:
+      - dfs-net
+    depends_on:
+      - metadata-server
+
+  storage-node-3:
+    build: ./storagenode
+    container_name: storage-node-3
+    command: storage_node.py storage-node-3 5003
+    ports:
+      - "5003:5003"
+    environment:
+      - METADATA_HOST=metadata-server
+    volumes:
+      - ./storage/node3:/app/storage/storage-node-3
+    networks:
+      - dfs-net
+    depends_on:
+      - metadata-server
+
+networks:
+  dfs-net:
+    driver: bridge
