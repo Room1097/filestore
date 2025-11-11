@@ -3,13 +3,14 @@ import threading
 import json
 import logging
 import time
+import os
 from random import sample
 
 HOST = '0.0.0.0'
 PORT = 6000
 PERSISTENCE_FILE = 'metadata/metadata.json'
 HEARTBEAT_TIMEOUT = 30
-REPLICATION_FACTOR = 2   
+REPLICATION_FACTOR = 2
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(threadName)s - %(message)s')
@@ -17,23 +18,29 @@ logging.basicConfig(level=logging.INFO,
 class MetadataServer:
     def __init__(self):
         self.metadata = {
-            "nodes": {},  
-            "files": {},  
-            "chunks": {}  
+            "nodes": {},
+            "users": {}  # email -> {"files": {}, "chunks": {}}
         }
         self.lock = threading.Lock()
         self.port = PORT
         self._load_state()
 
     def _save_state(self):
-        """Saves the current metadata to the persistence file."""
+        if os.path.isdir(PERSISTENCE_FILE):
+            logging.warning(f"'{PERSISTENCE_FILE}' is a directory, removing it.")
+            os.rmdir(PERSISTENCE_FILE)
+        
         with self.lock:
+            os.makedirs(os.path.dirname(PERSISTENCE_FILE), exist_ok=True)
             with open(PERSISTENCE_FILE, 'w') as f:
                 json.dump(self.metadata, f, indent=4)
         logging.info("Server state saved.")
 
     def _load_state(self):
-        """Loads metadata from the persistence file if it exists."""
+        if os.path.isdir(PERSISTENCE_FILE):
+            logging.warning(f"'{PERSISTENCE_FILE}' is a directory, cannot load. Starting fresh.")
+            return
+        
         try:
             with open(PERSISTENCE_FILE, 'r') as f:
                 self.metadata = json.load(f)
@@ -43,8 +50,15 @@ class MetadataServer:
         except json.JSONDecodeError:
             logging.warning("Could not decode persistence file, starting fresh.")
 
+    def _ensure_user_exists(self, user_email):
+        """Ensure user namespace exists in metadata"""
+        if user_email not in self.metadata["users"]:
+            self.metadata["users"][user_email] = {
+                "files": {},
+                "chunks": {}
+            }
+
     def _prune_dead_nodes(self):
-        """Periodically checks for dead nodes and removes them."""
         while True:
             time.sleep(HEARTBEAT_TIMEOUT)
             with self.lock:
@@ -60,14 +74,14 @@ class MetadataServer:
                 logging.warning(f"Pruning dead nodes: {dead_nodes}")
                 for node_id in dead_nodes:
                     del self.metadata["nodes"][node_id]
-                    # Also remove this node from chunk locations
-                    for chunk_id, locations in self.metadata["chunks"].items():
-                        if node_id in locations:
-                            locations.remove(node_id)
+                    # Remove from all users' chunks
+                    for user_data in self.metadata["users"].values():
+                        for chunk_id, locations in user_data["chunks"].items():
+                            if node_id in locations:
+                                locations.remove(node_id)
             self._save_state()
 
     def _handle_client(self, client_socket):
-        """Handles a single client connection."""
         try:
             data = client_socket.recv(4096).decode('utf-8')
             request = json.loads(data)
@@ -119,20 +133,37 @@ class MetadataServer:
         return {"status": "error", "message": "Node not registered"}
 
     def _handle_list_files(self, payload):
+        """List files for a specific user"""
+        user_email = payload.get("user_email")
+        if not user_email:
+            return {"status": "error", "message": "User email required"}
+        
         with self.lock:
-            return {"status": "ok", "files": list(self.metadata["files"].keys())}
+            self._ensure_user_exists(user_email)
+            user_files = list(self.metadata["users"][user_email]["files"].keys())
+            return {"status": "ok", "files": user_files}
 
     def _handle_get_file_info(self, payload):
+        """Get file info for a specific user"""
+        user_email = payload.get("user_email")
+        filename = payload.get("filename")
+        
+        if not user_email or not filename:
+            return {"status": "error", "message": "User email and filename required"}
+        
         with self.lock:
-            filename = payload["filename"]
-            if filename not in self.metadata["files"]:
+            if user_email not in self.metadata["users"]:
+                return {"status": "error", "message": "User not found"}
+            
+            user_data = self.metadata["users"][user_email]
+            
+            if filename not in user_data["files"]:
                 return {"status": "error", "message": "File not found"}
             
-            chunk_order = self.metadata["files"][filename]
+            chunk_order = user_data["files"][filename]
             locations = {}
             for chunk_id in chunk_order:
-                node_ids = self.metadata["chunks"].get(chunk_id, [])
-                # Get addresses for the node IDs
+                node_ids = user_data["chunks"].get(chunk_id, [])
                 locations[chunk_id] = [
                     self.metadata["nodes"][node_id]["address"]
                     for node_id in node_ids if node_id in self.metadata["nodes"]
@@ -140,15 +171,24 @@ class MetadataServer:
             return {"status": "ok", "chunks": chunk_order, "locations": locations}
 
     def _handle_put_file_info(self, payload):
+        """Store file info for a specific user"""
+        user_email = payload.get("user_email")
+        filename = payload.get("filename")
+        chunks = payload.get("chunks")
+        locations = payload.get("chunk_locations")
+        
+        if not user_email or not filename:
+            return {"status": "error", "message": "User email and filename required"}
+        
         with self.lock:
-            filename = payload["filename"]
-            chunks = payload["chunks"]
-            locations = payload["chunk_locations"] # {"chunk_id": ["node_id_1", ...]}
+            self._ensure_user_exists(user_email)
+            user_data = self.metadata["users"][user_email]
             
-            self.metadata["files"][filename] = chunks
+            user_data["files"][filename] = chunks
             for chunk_id, node_ids in locations.items():
-                self.metadata["chunks"][chunk_id] = node_ids
-        logging.info(f"New file '{filename}' committed to metadata.")
+                user_data["chunks"][chunk_id] = node_ids
+        
+        logging.info(f"File '{filename}' committed for user '{user_email}'.")
         self._save_state()
         return {"status": "ok"}
 
