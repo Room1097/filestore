@@ -6,7 +6,7 @@ services:
     ports:
       - "6000:6000"
     volumes:
-      - ./metadata.json:/app/metadata
+      - ./metadata:/app/metadata
     networks:
       - dfs-net
 
