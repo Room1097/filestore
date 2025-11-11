@@ -7,7 +7,7 @@ from random import sample
 
 HOST = '0.0.0.0'
 PORT = 6000
-PERSISTENCE_FILE = 'metadata.json'
+PERSISTENCE_FILE = 'metadata/metadata.json'
 HEARTBEAT_TIMEOUT = 30
 REPLICATION_FACTOR = 2   
 
