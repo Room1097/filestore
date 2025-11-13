@@ -343,6 +343,45 @@ class DFSClient:
             st.error(f"Download error: {type(e).__name__}: {e}")
             return None
 
+    def delete(self, filename):
+        """Delete a file: remove chunks from storage nodes, then remove metadata."""
+        # Get file info first
+        response = self._send_to_metadata("GET_FILE_INFO", {
+            "user_email": self.user_email,
+            "filename": filename
+        })
+        if not response or response.get("status") != "ok":
+            st.error(f"Could not get file info for '{filename}': {response.get('message', '') if response else 'No response'}")
+            return False
+
+        chunk_order = response.get("chunks", [])
+        locations = response.get("locations", {})
+
+        # Attempt deletion on all known replicas for each chunk
+        for chunk_hash in chunk_order:
+            chunk_addresses = locations.get(chunk_hash, [])
+            for address in chunk_addresses:
+                header = f"DELETE\n{chunk_hash}\n\n".encode('utf-8')
+                try:
+                    resp = self._send_to_storage_node(address, header)
+                    if resp and resp.startswith(b'OK'):
+                        st.info(f"Deleted chunk {chunk_hash} on {address}")
+                    else:
+                        st.warning(f"Delete failed on {address} for chunk {chunk_hash}")
+                except Exception as e:
+                    st.warning(f"Error deleting chunk {chunk_hash} on {address}: {e}")
+
+        # Finally remove metadata
+        md_resp = self._send_to_metadata("DELETE_FILE", {
+            "user_email": self.user_email,
+            "filename": filename
+        })
+        if md_resp and md_resp.get("status") == "ok":
+            return True
+        else:
+            st.error(f"Failed to delete metadata for '{filename}': {md_resp.get('message', '') if md_resp else 'No response'}")
+            return False
+
 
 # Streamlit UI
 st.set_page_config(page_title="Distributed File System", page_icon="📁", layout="wide")
@@ -558,6 +597,19 @@ else:
                 with col_a:
                     st.write(f"**{idx}.**")
                 with col_b:
-                    st.write(f"`{filename}`")
+                    row_col1, row_col2 = st.columns([8,1])
+                    with row_col1:
+                        st.write(f"`{filename}`")
+                    with row_col2:
+                        if st.button("🗑️ Delete", key=f"delete_{filename}"):
+                            client = DFSClient(st.session_state.user_email)
+                            with st.spinner(f"Deleting {filename}..."):
+                                ok = client.delete(filename)
+                                if ok:
+                                    st.success(f"Deleted '{filename}'")
+                                    st.session_state.file_list = client.list_files()
+                                    st.rerun()
+                                else:
+                                    st.error(f"Failed to delete '{filename}'")
         else:
             st.info("📭 No files stored yet.")

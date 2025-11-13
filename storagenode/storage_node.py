@@ -175,8 +175,22 @@ class StorageNode:
                 else:
                     client_socket.sendall(b"ERROR\nChunk not found")
                     logging.warning(f"Chunk '{chunk_id}' not found at {chunk_path}")
-
-                        
+                
+            elif command == "DELETE":
+                # Remove stored chunk file if present
+                chunk_path = os.path.join(self.storage_path, chunk_id)
+                logging.info(f"DELETE request for chunk '{chunk_id}'")
+                try:
+                    if os.path.exists(chunk_path):
+                        os.remove(chunk_path)
+                        logging.info(f"✓ Deleted chunk '{chunk_id}' from {chunk_path}")
+                        client_socket.sendall(b"OK")
+                    else:
+                        logging.warning(f"Chunk '{chunk_id}' not found for deletion at {chunk_path}")
+                        client_socket.sendall(b"ERROR\nChunk not found")
+                except Exception as e:
+                    logging.error(f"Error deleting chunk '{chunk_id}': {e}", exc_info=True)
+                    client_socket.sendall(b"ERROR\nServer error")
             else:
                 logging.error(f"Unknown command: {command}")
                 client_socket.sendall(b"ERROR\nUnknown command")
