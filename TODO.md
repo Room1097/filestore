@@ -1,4 +1,10 @@
-1. fault tolerance
-2. cred based
-3. frontend
-4. 
+- [x] fault tolerance
+- [x] cred based authentication
+- [x] add a frontend
+- [x] ui updates
+- [ ] replication factor
+- [ ] folder creation?
+- [x] delete
+- [ ] share
+- [ ] ui updates 2.0
+- [ ] multiple files same name

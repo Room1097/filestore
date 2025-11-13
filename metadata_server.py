@@ -94,6 +94,7 @@ class MetadataServer:
                 "LIST_FILES": self._handle_list_files,
                 "GET_FILE_INFO": self._handle_get_file_info,
                 "PUT_FILE_INFO": self._handle_put_file_info,
+                "DELETE_FILE": self._handle_delete_file,
                 "GET_WRITE_NODES": self._handle_get_write_nodes,
             }
 
@@ -189,6 +190,40 @@ class MetadataServer:
                 user_data["chunks"][chunk_id] = node_ids
         
         logging.info(f"File '{filename}' committed for user '{user_email}'.")
+        self._save_state()
+        return {"status": "ok"}
+
+    def _handle_delete_file(self, payload):
+        """Delete a file's metadata (and prune chunk metadata not referenced by other files)."""
+        user_email = payload.get("user_email")
+        filename = payload.get("filename")
+
+        if not user_email or not filename:
+            return {"status": "error", "message": "User email and filename required"}
+
+        with self.lock:
+            if user_email not in self.metadata["users"]:
+                return {"status": "error", "message": "User not found"}
+
+            user_data = self.metadata["users"][user_email]
+            if filename not in user_data["files"]:
+                return {"status": "error", "message": "File not found"}
+
+            # Remove the file entry and collect chunks to check
+            chunks_to_check = user_data["files"].pop(filename)
+
+            # For each chunk, determine if any remaining file references it; if not, remove chunk metadata
+            for chunk_id in chunks_to_check:
+                still_used = False
+                for other_chunks in user_data["files"].values():
+                    if chunk_id in other_chunks:
+                        still_used = True
+                        break
+                if not still_used:
+                    if chunk_id in user_data["chunks"]:
+                        del user_data["chunks"][chunk_id]
+
+        logging.info(f"File '{filename}' deleted for user '{user_email}'.")
         self._save_state()
         return {"status": "ok"}
 
