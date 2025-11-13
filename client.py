@@ -10,7 +10,92 @@ AUTH_HOST = '127.0.0.1'
 AUTH_PORT = 8000  # Changed from 7000
 METADATA_HOST = '127.0.0.1'
 METADATA_PORT = 6000
-CHUNK_SIZE = 1024 * 1024
+CHUNK_SIZE = 1024 * 2048
+
+# -----------------------------
+# Streamlit Page Setup & Styling
+# -----------------------------
+st.set_page_config(page_title="Distributed File System", layout="wide")
+
+# Custom dark theme and UI polish
+st.markdown("""
+    <style>
+        /* Global styling */
+        body, .stApp {
+            background-color: #111418;
+            color: #e0e0e0;
+        }
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            max-width: 1200px;
+        }
+        h1, h2, h3, h4, h5 {
+            font-family: "Inter", sans-serif;
+            font-weight: 600;
+        }
+
+        /* Gradient header */
+        .header-container {
+            background: linear-gradient(90deg, #0d1b2a 0%, #1b263b 50%, #2E8BC0 100%);
+            padding: 1.2rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            color: #f1f1f1;
+        }
+
+        /* Card container */
+        .card {
+            background-color: #1a1d23;
+            padding: 1.2rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.4);
+            margin-bottom: 1rem;
+        }
+
+        /* Buttons */
+        .stButton>button {
+            background: #2E8BC0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+        }
+        .stButton>button:hover {
+            background: #1b6390;
+        }
+
+        /* Tabs styling */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 10px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background-color: #1a1d23;
+            border-radius: 6px 6px 0 0;
+            padding: 0.6em 1em;
+            color: #bdbdbd;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: #2E8BC0 !important;
+            color: white !important;
+            border-bottom: 2px solid #2E8BC0 !important;
+        }
+
+        /* Sidebar */
+        section[data-testid="stSidebar"] {
+            background-color: #0d1b2a !important;
+            color: #e0e0e0;
+        }
+
+        /* Success / Error simplification */
+        .stAlert {
+            border-radius: 6px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
 
 # Initialize session state
 if 'logged_in' not in st.session_state:
@@ -341,10 +426,9 @@ class DFSClient:
             st.error(f"Failed to delete metadata for '{filename}': {md_resp.get('message', '') if md_resp else 'No response'}")
             return False
 
-# Streamlit UI
-st.set_page_config(page_title="Distributed File System", page_icon="📁", layout="wide")
-
-# Authentication check
+# -----------------------------
+# Login / Register UI
+# -----------------------------
 if not st.session_state.logged_in:
     st.title("📁 Distributed File System - Login")
 
@@ -382,19 +466,21 @@ if not st.session_state.logged_in:
             reg_password_confirm = st.text_input("Confirm Password", type="password")
             submit = st.form_submit_button("Register", type="primary")
             if submit:
-                if not reg_name or not reg_email or not reg_password:
-                    st.error("Please fill all fields")
-                elif reg_password != reg_password_confirm:
-                    st.error("Passwords do not match")
-                elif len(reg_password) < 6:
-                    st.error("Password must be at least 6 characters")
+                if not all([name, email, password, confirm]):
+                    st.warning("All fields are required.")
+                elif password != confirm:
+                    st.warning("Passwords do not match.")
                 else:
-                    response = auth_client.register(reg_email, reg_password, reg_name)
-                    if response and response.get("status") == "ok":
-                        st.success("Registration successful! Please login.")
+                    res = auth_client.register(email, password, name)
+                    if res["status"] == "ok":
+                        st.success("Account created successfully. You may now log in.")
                     else:
-                        st.error(response.get("message", "Registration failed"))
+                        st.error("Registration failed.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
+# -----------------------------
+# Main Dashboard UI
+# -----------------------------
 else:
     # User is logged in
     st.title("📁 Distributed File System")
@@ -436,14 +522,14 @@ else:
         storage_nodes = [
             ("Storage Node 1", 5001),
             ("Storage Node 2", 5002),
-            ("Storage Node 3", 5003)
+            ("Storage Node 3", 5003),
         ]
         for name, port in storage_nodes:
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(1)
-                    s.connect((METADATA_HOST, port))
-                    st.success(f"✅ {name}")
+                    s.settimeout(0.5)
+                    s.connect((AUTH_HOST, port))
+                    st.success(name)
             except:
                 st.error(f"❌ {name}")
 
