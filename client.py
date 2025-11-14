@@ -13,152 +13,143 @@ METADATA_PORT = 6000
 CHUNK_SIZE = 1024 * 2048
 
 # -----------------------------
-# Streamlit Styling (subtle, minimal, primarily for buttons and color/text polish)
+# Streamlit Styling
 # -----------------------------
 st.set_page_config(page_title="Distributed File System", layout="wide")
 st.markdown("""
-    <style>
-        body, .stApp {
-            background: linear-gradient(135deg, #162039 0%, #24415b 100%);
-            color: #e1e6ec;
-        }
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            max-width: 1160px;
-            background: none;
-            box-shadow: none;
-        }
-        h1, h2, h3, h4, h5 {
-            font-family: "Inter", sans-serif;
-            font-weight: 600;
-            color: #fff;
-        }
-        .st-emotion-cache-10trblm, .st-emotion-cache-1d391kg {
-            background: linear-gradient(97deg, #305e9c 24%, #173d6b 95%);
-            padding: 12px 22px !important;
-            border-radius: 5px;
-            color: #f5fbff !important;
-            margin-bottom: 18px;
-            box-shadow: none;
-        }
-        /* Remove excessive card/box feel */
-        .card, .st-emotion-cache-1nm2qww, .stContainer {
-            background: none !important;
-            box-shadow: none !important;
-            padding: 0;
-            margin-bottom: 0.3rem;
-            border-radius: 0 !important;
-        }
-        /* Subtle button styling, gentle rounding */
-        .stButton>button {
-            background: linear-gradient(93deg, #466fa5 78%, #164f7c 100%);
-            color: #f5fbff;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            padding: 0.48rem 1.15rem;
-            margin-bottom: 3px;
-            font-size: 16px;
-            box-shadow: none;
-            transition: background 0.19s;
-        }
-        .stButton>button:hover, .stDownloadButton>button:hover {
-            background: linear-gradient(93deg, #2b3a59 80%, #214269 120%) !important;
-            color: #b6d6f7 !important;
-        }
-        /* Save file/download button */
-        .stDownloadButton>button {
-            background: linear-gradient(92deg, #498ccc 64%, #215882 91%);
-            color: #f6f9fc;
-            border-radius: 6px;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-        /* File uploader - more subtle */
-        section[data-testid="stFileUploaderDropzone"] {
-            background: #20334d;
-            border: 1px solid #1d3046;
-            border-radius: 0px;
-        }
-        /* Pop out the actual upload input area with a thin white border */
-        section[data-testid="stFileUploaderDropzone"] div[role="button"] {
-            border: 1.5px solid #fff;
-            border-radius: 6px !important;
-            box-shadow: 0 0 0 2px #fff3 inset;
-            background: rgba(32, 51, 77, 0.95);
-            transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        section[data-testid="stFileUploaderDropzone"] div[role="button"]:hover {
-            border-color: #b6d6f7;
-            box-shadow: 0 0 0 3px #eaf2ff88 inset;
-        }
-        /* Tabs - gentle accent, no containing box */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 12px;
-            background: none;
-            border-bottom: 1px solid #2c4880;
-        }
-        .stTabs [data-baseweb="tab"] {
-            border-radius: 0px;
-            background: none !important;
-            color: #c6e2ff;
-            font-weight: 500;
-        }
-        .stTabs [aria-selected="true"] {
-            background: none;
-            color: #fff !important;
-            border-bottom: 2.5px solid #2e8bc0 !important;
-        }
-        /* Sidebar: minimal accent color only, no box */
-        section[data-testid="stSidebar"] {
-            background: #18263a !important;
-            color: #dde7f2;
-            border-radius: 0px;
-            box-shadow: none;
-        }
-        /* Success/Error: keep it minimal */
-        .stAlert {
-            border-radius: 3px;
-            border-width: 1px;
-            background: #19284033;
-        }
-        /* Misc text */
-        .css-1qaijid, .st-emotion-cache-1v0mbdj, .st-emotion-cache-1v0mbdj p {
-            color: #d2e8ff;
-        }
-        /* Tables/file list: no round */
-        .stDataFrame, .stTable {
-            border-radius: 0px;
-            overflow: hidden;
-            background: #202b3b;
-        }
-        /* Input widgets - minimal underline style, no round */
-        .stTextInput>div>div>input, .stPasswordInput>div>div>input {
-            background: none;
-            color: #e4f1ff;
-            border: none;
-            border-bottom: 2px solid #3b5774;
-            border-radius: 0px;
-            font-weight: 500;
-        }
-        .stTextInput>div>div>input:focus, .stPasswordInput>div>div>input:focus {
-            border-bottom: 2px solid #4689bf;
-        }
-        /* Hide Streamlit "Deploy" button and 3-dot menu */
-        header[data-testid="stHeader"] div[data-testid="stDecoration"] { display: none !important; }
-        header[data-testid="stHeader"] span[data-testid="stDeployButton"] { display: none !important; }
-        header[data-testid="stHeader"] { visibility: hidden !important; height: 0px !important; min-height: 0px !important; }
-        /* Hide Press Enter to Submit Form */
-        .stForm .stFormSubmitInstructions {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-    </style>
+<style>
+
+    /* -------- GLOBAL -------- */
+    body, .stApp {
+        background: linear-gradient(145deg, #09152a 0%, #0c233d 100%);
+        color: #e8eef5;
+        font-family: "Inter", sans-serif;
+    }
+
+    .block-container {
+        padding-top: 2rem !important;
+        max-width: 1100px;
+    }
+
+    /* -------- TITLES -------- */
+    h1, h2, h3 {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    /* Soft glowing underline header */
+    h1::after {
+        content: "";
+        display: block;
+        width: 60px;
+        margin-top: 8px;
+        height: 3px;
+        background: linear-gradient(90deg, #46a0ff, #1e5fa9);
+        border-radius: 6px;
+    }
+
+    /* -------- GLASS CARD (NOW APPLIED TO ST-ELEMENTS) -------- */
+    
+    /* This now styles the Login/Register Tab Group */
+    .stTabs {
+        background: rgba(255,255,255,0.04);
+        backdrop-filter: blur(14px);
+        padding: 1rem 1.4rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 1.2rem;
+        box-shadow: 0 0 18px rgba(0,0,0,0.35);
+    }
+
+    /* This new rule styles the File Uploader */
+    [data-testid="stFileUploader"] {
+        background: rgba(255,255,255,0.04);
+        backdrop-filter: blur(14px);
+        padding: 1.2rem 1.4rem 1.4rem 1.4rem; /* A little more padding */
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 1.2rem;
+        box-shadow: 0 0 18px rgba(0,0,0,0.35);
+    }
+
+
+    /* -------- FILE CARDS (NOW APPLIED TO st.container(border=True)) -------- */
+    
+    /* We target the .st-border class from st.container(border=True) */
+    .st-border {
+        padding: 14px 18px !important; /* Use !important to override defaults */
+        border-radius: 8px !important;
+        margin-bottom: 10px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08) !important; /* Override default border */
+        border-left: 3px solid #1b79d1 !important; /* Keep your accent */
+        transition: background .2s;
+    }
+
+    .st-border:hover {
+        background: rgba(255,255,255,0.09);
+    }
+    
+    /* # NEW: Style for the st.metric upload summary */
+    [data-testid="stMetric"] {
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.03);
+        padding: 10px 15px;
+        border-radius: 8px;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #bcd7f7; /* Lighter label color */
+        font-size: 0.9rem;
+    }
+    [data-testid="stMetricValue"] {
+        color: #ffffff; /* White value color */
+    }
+    /* # END NEW */
+
+    /* -------- BUTTONS -------- */
+    .stButton>button, .stDownloadButton>button {
+        background: linear-gradient(90deg, #2188d8, #1762a3);
+        padding: 0.55rem 1.3rem;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: 0.22s ease;
+        color: #eaf3ff;
+    }
+
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        background: linear-gradient(90deg, #3aa4ff, #1e7bd0);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+
+    /* -------- INPUTS -------- */
+    input[type="text"], input[type="password"] {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 6px !important;
+        color: #eaf3ff !important;
+    }
+
+    /* -------- TABS -------- */
+    .stTabs [data-baseweb="tab"] {
+        background: none !important;
+        padding: 9px 18px !important;
+        font-weight: 500;
+        color: #bcd7f7;
+        border: 1px solid transparent;
+    }
+
+    .stTabs [aria-selected="true"] {
+        border-bottom: 2px solid #1d7ed6 !important;
+        color: white !important;
+    }
+
+</style>
 """, unsafe_allow_html=True)
+
+
+
 
 # Session state
 if 'logged_in' not in st.session_state:
@@ -459,24 +450,31 @@ class DFSClient:
             return False
 
 # -----------------------------
-# Login / Register UI
+# MAIN UI (Login + Dashboard)
 # -----------------------------
+
+# -----------------------------------
+# LOGIN / REGISTER
+# -----------------------------------
 if not st.session_state.logged_in:
-    st.title("📁 Distributed File System - Login")
 
-    tab1, tab2 = st.tabs(["Login", "Register"])
+    st.title("Distributed File System")
 
+    tab_login, tab_register = st.tabs(["Login", "Register"])
     auth_client = AuthClient()
 
-    with tab1:
-        st.header("Login")
+    # ------------ LOGIN ------------
+    with tab_login:
+        st.subheader("Sign In")
+
         with st.form("login_form", clear_on_submit=True):
             email = st.text_input("Email")
             password = st.text_input("Password", type="password")
-            submit = st.form_submit_button("Login", type="primary")
+            submit = st.form_submit_button("Login")
+
             if submit:
                 if not email or not password:
-                    st.error("Please enter both email and password")
+                    st.error("Please enter both email and password.")
                 else:
                     response = auth_client.login(email, password)
                     if response and response.get("status") == "ok":
@@ -484,19 +482,22 @@ if not st.session_state.logged_in:
                         st.session_state.session_token = response.get("session_token")
                         st.session_state.user_email = response.get("email")
                         st.session_state.user_name = response.get("name")
-                        st.success(f"Welcome back, {response.get('name')}!")
+                        st.success(f"Welcome back, {response.get('name')}")
                         st.rerun()
                     else:
                         st.error(response.get("message", "Login failed"))
 
-    with tab2:
-        st.header("Register")
+    # ------------ REGISTER ------------
+    with tab_register:
+        st.subheader("Create Account")
+
         with st.form("register_form", clear_on_submit=True):
             reg_name = st.text_input("Name")
             reg_email = st.text_input("Email")
             reg_password = st.text_input("Password", type="password")
             reg_password_confirm = st.text_input("Confirm Password", type="password")
-            submit = st.form_submit_button("Register", type="primary")
+            submit = st.form_submit_button("Register")
+
             if submit:
                 if not all([reg_name, reg_email, reg_password, reg_password_confirm]):
                     st.warning("All fields are required.")
@@ -505,22 +506,29 @@ if not st.session_state.logged_in:
                 else:
                     res = auth_client.register(reg_email, reg_password, reg_name)
                     if res and res.get("status") == "ok":
-                        st.success("Account created successfully. You may now log in.")
+                        st.success("Account created successfully.")
                     else:
                         st.error("Registration failed.")
+    
 
-# -----------------------------
-# Main Dashboard UI
-# -----------------------------
+
+# -----------------------------------
+# DASHBOARD
+# -----------------------------------
 else:
-    st.title("📁 Distributed File System")
+    
+    # # NEW: Added a title for the logged-in dashboard
+    st.title(f"Welcome, {st.session_state.user_name}")
 
-    # Sidebar
+    # ===============================
+    # SIDEBAR — USER DETAILS + LOGOUT
+    # ===============================
     with st.sidebar:
-        st.header(f"👤 {st.session_state.user_name}")
-        st.write(f"**Email:** {st.session_state.user_email}")
 
-        if st.button("🚪 Logout", type="primary"):
+        st.markdown(f"### {st.session_state.user_name}")
+        st.markdown(f"<p style='opacity:0.7'>{st.session_state.user_email}</p>", unsafe_allow_html=True)
+
+        if st.button("Logout",icon=":material/logout:"):
             auth_client = AuthClient()
             auth_client.logout(st.session_state.session_token)
             st.session_state.logged_in = False
@@ -531,122 +539,139 @@ else:
             st.rerun()
 
         st.markdown("---")
-        st.markdown("### 🔌 System Status")
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(1)
-                s.connect((AUTH_HOST, AUTH_PORT))
-                st.success("✅ Auth Server")
-        except:
-            st.error("❌ Auth Server")
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(1)
-                s.connect((METADATA_HOST, METADATA_PORT))
-                st.success("✅ Metadata Server")
-        except:
-            st.error("❌ Metadata Server")
-        storage_nodes = [
-            ("Storage Node 1", 5001),
-            ("Storage Node 2", 5002),
-            ("Storage Node 3", 5003),
-        ]
-        for name, port in storage_nodes:
+        st.subheader("System Status")
+
+        # Added CSS for status chips here for completeness
+        st.markdown("""
+        <style>
+        .status-chip {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .status-online {
+            background-color: #1e462e;
+            color: #70e19a;
+            border: 1px solid #2a5c3e;
+        }
+        .status-offline {
+            background-color: #442026;
+            color: #f78b9c;
+            border: 1px solid #5e2e38;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        def check_port(name, port):
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(0.5)
-                    s.connect((AUTH_HOST, port))
-                    st.success(name)
+                    s.settimeout(1)
+                    s.connect(("127.0.0.1", port))
+                    st.markdown(f"<div class='status-chip status-online'>{name}: Online</div>", unsafe_allow_html=True)
             except:
-                st.error(f"❌ {name}")
+                st.markdown(f"<div class='status-chip status-offline'>{name}: Offline</div>", unsafe_allow_html=True)
+
+        check_port("Auth Server", AUTH_PORT)
+        check_port("Metadata Server", METADATA_PORT)
+
+        for label, port in [
+            ("Storage Node 1", 5001),
+            ("Storage Node 2", 5002),
+            ("Storage Node 3", 5003)
+        ]:
+            check_port(label, port)
 
         st.markdown("---")
-        st.markdown("### ⚙️ Configuration")
-        st.write(f"**Auth Server:** `{AUTH_HOST}:{AUTH_PORT}`")
-        st.write(f"**Metadata Server:** `{METADATA_HOST}:{METADATA_PORT}`")
-        st.write(f"**Chunk Size:** `{CHUNK_SIZE / (1024*1024):.1f} MB`")
+        st.subheader("Configuration")
+        st.text(f"Auth Server: {AUTH_HOST}:{AUTH_PORT}")
+        st.text(f"Metadata: {METADATA_HOST}:{METADATA_PORT}")
+        st.text(f"Chunk Size: {CHUNK_SIZE/(1024*1024):.1f} MB")
 
-    st.markdown("---")
+
+
+    # ===============================
+    # UPLOAD AREA
+    # ===============================
+    st.subheader("Upload File")
     client = DFSClient(st.session_state.user_email)
 
-    st.header("Upload File")
     if 'upload_reset_counter' not in st.session_state:
         st.session_state.upload_reset_counter = 0
+
     def reset_upload():
         st.session_state.upload_reset_counter += 1
 
     uploaded_file = st.file_uploader(
-        "Choose a file to upload",
+        "Select a file",
         type=None,
         key=f"file_uploader_{st.session_state.upload_reset_counter}"
     )
 
-    if uploaded_file is not None:
+    if uploaded_file:
+        # # CHANGED: Replaced 3x st.info with a single summary block
+        # st.markdown(f"**File to Upload:** `{uploaded_file.name}`")
+        
         col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"**Filename:** `{uploaded_file.name}`")
-        with col2:
-            st.markdown(f"**Size:** `{uploaded_file.size:,} bytes`")
-        st.markdown(f"**Chunks:** `{(uploaded_file.size + CHUNK_SIZE - 1) // CHUNK_SIZE}`")
-
-        if st.button("Upload to DFS", type="primary", key="upload_btn"):
+        col1.metric("Total Size", f"{uploaded_file.size / (1024*1024):.2f} MB" if uploaded_file.size > 1024*1024 else f"{uploaded_file.size / 1024:.2f} KB")
+        col2.metric("Total Chunks", f"{(uploaded_file.size + CHUNK_SIZE - 1) // CHUNK_SIZE}")
+        # # END CHANGED
+        
+        if st.button("Upload",icon=":material/upload:"):
             with st.spinner("Uploading..."):
-                file_data = uploaded_file.read()
-                success = client.upload(file_data, uploaded_file.name)
-                if success:
-                    st.success(f"✅ '{uploaded_file.name}' uploaded successfully!")
-                    st.balloons()
+                ok = client.upload(uploaded_file.read(), uploaded_file.name)
+                if ok:
+                    st.success("File uploaded.")
                     st.session_state.file_list = client.list_files()
                     reset_upload()
                     st.rerun()
                 else:
-                    st.error("❌ Upload failed. Check the error messages above.")
+                    st.error("Upload failed.")
 
     st.markdown("---")
-    st.header("My Files")
 
-    col_list_left, col_list_right = st.columns([3, 1])
-    with col_list_right:
-        if st.button("🔄 Refresh List", key="refresh_list"):
-            st.session_state.file_list = client.list_files()
-            st.rerun()
+
+
+    # ===============================
+    # FILE LIST AREA
+    # ===============================
+    st.subheader("My Files")
+
+    if st.button("Refresh",icon=":material/sync:"):
+        st.session_state.file_list = client.list_files()
+        st.rerun()
 
     if not st.session_state.file_list:
         st.session_state.file_list = client.list_files()
+
     files = st.session_state.file_list
 
-    if files:
-        st.write(f"**Total files:** {len(files)}")
-        st.markdown("---")
-        for idx, filename in enumerate(files, 1):
-            row_col1, row_col2, row_col3 = st.columns([4, 1, 1])
-            with row_col1:
-                st.markdown(f"`{filename}`")
-            with row_col2:
-                download_clicked = st.button("⬇️ Download", key=f"download_{filename}")
-            with row_col3:
-                delete_clicked = st.button("🗑️ Delete", key=f"delete_{filename}")
+    if not files:
+        st.info("No files available.")
+    else:
+        for filename in files:
+            with st.container(border=True):
+                col1, col2, col3 = st.columns([6, 2, 2])
+                col1.markdown(f"**{filename}**")
 
-            if download_clicked:
-                with st.spinner(f"Downloading {filename}..."):
+                if col2.button("Download", key=f"dl_{filename}",icon=":material/download:"):
                     file_data = client.download(filename)
                     if file_data:
-                        st.success(f"✅ '{filename}' downloaded successfully! ({len(file_data):,} bytes)")
                         st.download_button(
-                            label="💾 Save File to Computer",
-                            data=file_data,
-                            file_name=filename,
-                            mime="application/octet-stream",
+                            "Save",
+                            file_data,
+                            filename,
+                            "application/octet-stream",
                             key=f"save_{filename}"
                         )
-            if delete_clicked:
-                with st.spinner(f"Deleting {filename}..."):
+
+                if col3.button("Delete", key=f"del_{filename}",icon=":material/delete:"):
                     ok = client.delete(filename)
                     if ok:
-                        st.success(f"Deleted '{filename}'")
+                        st.success("Deleted.")
                         st.session_state.file_list = client.list_files()
                         st.rerun()
                     else:
-                        st.error(f"Failed to delete '{filename}'")
-    else:
-        st.info("📭 No files stored yet.")
+                        st.error("Delete failed.")
